@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Info</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#080810;font-family:system-ui,sans-serif;color:#fff}
+canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+
+#home-btn{
+  position:fixed;top:16px;right:16px;z-index:20;
+  background:rgba(0,0,0,0.6);color:rgba(255,255,255,0.55);
+  font:13px/1 system-ui,sans-serif;padding:7px 14px;border-radius:20px;
+  cursor:pointer;border:1px solid rgba(255,255,255,0.18);
+  transition:background .2s,color .2s;user-select:none;letter-spacing:0.06em;
+}
+#home-btn:hover{background:rgba(255,255,255,0.1);color:#fff}
+
+#stage{
+  position:fixed;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  z-index:10;
+  pointer-events:none;
+}
+
+#manifesto{
+  font-size:clamp(13px,1.6vw,18px);
+  font-weight:300;
+  color:rgba(255,255,255,0.38);
+  letter-spacing:0.08em;
+  text-align:center;
+  line-height:1.9;
+  max-width:520px;
+  padding:0 32px;
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity 1s ease, transform 1s ease;
+}
+#manifesto em{
+  color:rgba(255,255,255,0.75);
+  font-style:normal;
+}
+
+#modes{
+  display:flex;
+  gap:clamp(12px,2.5vw,28px);
+  margin-top:clamp(40px,6vh,72px);
+  pointer-events:all;
+}
+
+.mcard{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+  cursor:default;
+  opacity:0;
+  transform:translateY(16px);
+  transition:opacity 0.7s ease, transform 0.7s ease;
+}
+
+.mcard-orbit{
+  position:relative;
+  width:64px;height:64px;
+}
+.mcard-orbit svg{
+  width:64px;height:64px;
+  position:absolute;inset:0;
+}
+.ring{
+  fill:none;
+  stroke:rgba(255,255,255,0.07);
+  stroke-width:1;
+  transition:stroke 0.4s;
+}
+.mcard:hover .ring{stroke:rgba(255,255,255,0.22);}
+
+.dot{
+  position:absolute;
+  width:5px;height:5px;
+  border-radius:50%;
+  top:50%;left:50%;
+  margin:-2.5px 0 0 -2.5px;
+  background:rgba(255,255,255,0.3);
+  transition:background 0.4s;
+}
+.mcard:hover .dot{background:rgba(255,255,255,0.9);}
+
+.mcard-icon{
+  position:absolute;
+  inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;
+  opacity:0.5;
+  transition:opacity 0.4s;
+  user-select:none;
+}
+.mcard:hover .mcard-icon{opacity:1;}
+
+.mcard-labels{text-align:center;line-height:1;}
+.mcard-name{
+  font-size:11px;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.3);
+  transition:color 0.4s;
+}
+.mcard:hover .mcard-name{color:rgba(255,255,255,0.9);}
+.mcard-phys{
+  font-size:10px;
+  letter-spacing:0.12em;
+  color:rgba(255,255,255,0.12);
+  margin-top:5px;
+  transition:color 0.4s;
+  font-style:italic;
+}
+.mcard:hover .mcard-phys{color:rgba(255,255,255,0.38);}
+
+#cta-row{
+  margin-top:clamp(40px,6vh,72px);
+  pointer-events:all;
+  opacity:0;
+  transition:opacity 0.8s ease;
+}
+#go-sim{
+  display:flex;align-items:center;gap:10px;
+  color:rgba(255,255,255,0.5);
+  font-size:13px;letter-spacing:0.12em;text-transform:uppercase;
+  border:1px solid rgba(255,255,255,0.18);
+  background:rgba(0,0,0,0.6);
+  padding:7px 14px;border-radius:20px;
+  cursor:pointer;
+  transition:color 0.2s,background 0.2s;
+}
+#go-sim:hover{color:rgba(255,255,255,0.95);background:rgba(255,255,255,0.1);}
+
+#overlay{position:fixed;inset:0;background:#080810;z-index:50;pointer-events:none;opacity:0;transition:opacity 0.7s ease}
+#overlay.fade{opacity:1;pointer-events:all}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<button id="home-btn">← Home</button>
+
+<div id="stage">
+
+  <div id="manifesto">
+    Non subiamo le leggi fisiche —<br>
+    <em>le incarniamo.</em><br>
+    Ogni traiettoria è una scelta.<br>
+    Ogni forza, un significato.
+  </div>
+
+  <div id="modes">
+
+    <div class="mcard" id="mc0">
+      <div class="mcard-orbit">
+        <svg viewBox="0 0 64 64"><circle class="ring" cx="32" cy="32" r="28"/></svg>
+        <div class="mcard-icon">🌍</div>
+        <div class="dot" id="dot0"></div>
+      </div>
+      <div class="mcard-labels">
+        <div class="mcard-name">Destino</div>
+        <div class="mcard-phys">gravità</div>
+      </div>
+    </div>
+
+    <div class="mcard" id="mc1">
+      <div class="mcard-orbit">
+        <svg viewBox="0 0 64 64"><circle class="ring" cx="32" cy="32" r="28"/></svg>
+        <div class="mcard-icon">🪐</div>
+        <div class="dot" id="dot1"></div>
+      </div>
+      <div class="mcard-labels">
+        <div class="mcard-name">Ritorno</div>
+        <div class="mcard-phys">orbite</div>
+      </div>
+    </div>
+
+    <div class="mcard" id="mc2">
+      <div class="mcard-orbit">
+        <svg viewBox="0 0 64 64"><circle class="ring" cx="32" cy="32" r="28"/></svg>
+        <div class="mcard-icon">〰️</div>
+        <div class="dot" id="dot2"></div>
+      </div>
+      <div class="mcard-labels">
+        <div class="mcard-name">Risonanza</div>
+        <div class="mcard-phys">onde</div>
+      </div>
+    </div>
+
+    <div class="mcard" id="mc3">
+      <div class="mcard-orbit">
+        <svg viewBox="0 0 64 64"><circle class="ring" cx="32" cy="32" r="28"/></svg>
+        <div class="mcard-icon">🧲</div>
+        <div class="dot" id="dot3"></div>
+      </div>
+      <div class="mcard-labels">
+        <div class="mcard-name">Attrazione</div>
+        <div class="mcard-phys">magnetismo</div>
+      </div>
+    </div>
+
+    <div class="mcard" id="mc4">
+      <div class="mcard-orbit">
+        <svg viewBox="0 0 64 64"><circle class="ring" cx="32" cy="32" r="28"/></svg>
+        <div class="mcard-icon">🌀</div>
+        <div class="dot" id="dot4"></div>
+      </div>
+      <div class="mcard-labels">
+        <div class="mcard-name">Origine</div>
+        <div class="mcard-phys">caos</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="cta-row">
+    <button id="go-sim">
+      <span>Esplora la simulazione</span>
+      <span style="font-size:16px;line-height:1">→</span>
+    </button>
+  </div>
+
+</div>
+
+<div id="overlay"></div>
+
+<script>
+/* canvas background */
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+let W,H,tick=0,particles=[];
+const mouse={x:0,y:0};
+
+function resize(){
+  const dpr=window.devicePixelRatio||1;
+  W=window.innerWidth;H=window.innerHeight;
+  cv.width=W*dpr;cv.height=H*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+resize();
+window.addEventListener('resize',resize);
+window.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;});
+
+function rand(a,b){return a+Math.random()*(b-a)}
+class Particle{
+  constructor(){
+    this.x=rand(0,W);this.y=rand(0,H);
+    this.vx=rand(-0.3,0.3);this.vy=rand(-0.3,0.3);
+    this.r=rand(0.8,2.5);this.hue=rand(200,280);
+    this.trail=[];this.phase=rand(0,Math.PI*2);
+  }
+}
+for(let i=0;i<140;i++) particles.push(new Particle());
+
+function drawBg(){
+  tick++;
+  ctx.fillStyle='rgba(8,8,16,0.14)';ctx.fillRect(0,0,W,H);
+  particles.forEach(p=>{
+    const dx=mouse.x-p.x,dy=mouse.y-p.y,dist=Math.sqrt(dx*dx+dy*dy)+1;
+    p.vx+=Math.sin(p.y*0.018+tick*0.01+p.phase)*0.04;
+    p.vy+=Math.cos(p.x*0.016+tick*0.012+p.phase)*0.04;
+    if(dist<250){p.vx+=dx/dist*0.025;p.vy+=dy/dist*0.025;}
+    p.vx*=0.988;p.vy*=0.988;
+    const spd=Math.sqrt(p.vx*p.vx+p.vy*p.vy);
+    if(spd>1.8){const s=1.8/spd;p.vx*=s;p.vy*=s;}
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<-10)p.x=W+10;if(p.x>W+10)p.x=-10;
+    if(p.y<-10)p.y=H+10;if(p.y>H+10)p.y=-10;
+    p.trail.push({x:p.x,y:p.y});if(p.trail.length>16)p.trail.shift();
+    if(p.trail.length>2){
+      ctx.beginPath();ctx.moveTo(p.trail[0].x,p.trail[0].y);
+      for(let i=1;i<p.trail.length;i++) ctx.lineTo(p.trail[i].x,p.trail[i].y);
+      ctx.strokeStyle=`hsla(${p.hue},65%,60%,0.13)`;
+      ctx.lineWidth=p.r*0.5;ctx.lineCap='round';ctx.stroke();
+    }
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=`hsla(${p.hue},70%,68%,0.45)`;ctx.fill();
+  });
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+
+/* punti orbitanti */
+const orbits=[
+  {speed:0.008,phase:0},
+  {speed:0.013,phase:1.2},
+  {speed:0.006,phase:2.5},
+  {speed:0.011,phase:0.7},
+  {speed:0.009,phase:3.8},
+];
+const dots=orbits.map((_,i)=>document.getElementById('dot'+i));
+const R=28;
+let ot=0;
+function animateDots(){
+  ot++;
+  orbits.forEach((o,i)=>{
+    const angle=ot*o.speed+o.phase;
+    dots[i].style.transform=`translate(${R*Math.cos(angle)}px,${R*Math.sin(angle)}px)`;
+  });
+  requestAnimationFrame(animateDots);
+}
+animateDots();
+
+/* entrata */
+setTimeout(()=>{
+  const m=document.getElementById('manifesto');
+  m.style.opacity='1';m.style.transform='translateY(0)';
+},400);
+[0,1,2,3,4].forEach(i=>{
+  setTimeout(()=>{
+    const mc=document.getElementById('mc'+i);
+    mc.style.opacity='1';mc.style.transform='translateY(0)';
+  },900+i*120);
+});
+setTimeout(()=>{document.getElementById('cta-row').style.opacity='1';},1700);
+
+/* navigazione */
+function goTo(url){
+  const ov=document.getElementById('overlay');
+  ov.classList.add('fade');
+  setTimeout(()=>{window.location.href=url;},700);
+}
+document.getElementById('home-btn').addEventListener('click',()=>goTo('index.html'));
+document.getElementById('go-sim').addEventListener('click',()=>goTo('movimento.html'));
+</script>
+</body>
+</html>

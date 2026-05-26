@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;min-height:100%;background:#080810;font-family:system-ui,sans-serif;color:#fff}
+canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+
+#home-btn{
+  position:fixed;
+  top:16px;right:16px;
+  z-index:20;
+  background:rgba(0,0,0,0.6);
+  color:rgba(255,255,255,0.55);
+  font:13px/1 system-ui,sans-serif;
+  padding:7px 14px;
+  border-radius:20px;
+  cursor:pointer;
+  border:1px solid rgba(255,255,255,0.18);
+  transition:background .2s, color .2s;
+  user-select:none;
+  display:flex;align-items:center;gap:7px;
+  letter-spacing:0.06em;
+}
+#home-btn:hover{background:rgba(255,255,255,0.1);color:#fff}
+
+#content{
+  position:relative;
+  z-index:10;
+  max-width:620px;
+  margin:0 auto;
+  padding:120px 32px 120px;
+}
+
+.eyebrow{
+  font-size:11px;
+  letter-spacing:0.25em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.3);
+  margin-bottom:28px;
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity 0.9s ease, transform 0.9s ease;
+}
+h1{
+  font-size:clamp(36px,6vw,64px);
+  font-weight:200;
+  letter-spacing:-0.02em;
+  line-height:1.05;
+  color:#fff;
+  margin-bottom:56px;
+  opacity:0;
+  transform:translateY(14px);
+  transition:opacity 1s ease 0.2s, transform 1s ease 0.2s;
+}
+
+.block{
+  margin-bottom:52px;
+  opacity:0;
+  transform:translateY(12px);
+  transition:opacity 0.9s ease, transform 0.9s ease;
+}
+.block-label{
+  font-size:10px;
+  letter-spacing:0.3em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.22);
+  margin-bottom:14px;
+}
+.block p{
+  font-size:15px;
+  line-height:1.8;
+  color:rgba(255,255,255,0.6);
+  font-weight:300;
+}
+.block p + p{
+  margin-top:12px;
+}
+.block p em{
+  color:rgba(255,255,255,0.9);
+  font-style:normal;
+}
+
+.divider{
+  width:32px;height:1px;
+  background:rgba(255,255,255,0.12);
+  margin:56px 0;
+  opacity:0;
+  transition:opacity 0.9s ease;
+}
+
+.modes{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-top:20px;
+}
+.mode-card{
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:10px;
+  padding:16px 18px;
+  background:rgba(255,255,255,0.03);
+}
+.mode-card .icon{font-size:16px;margin-bottom:8px}
+.mode-card .name{
+  font-size:12px;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.4);
+  margin-bottom:6px;
+}
+.mode-card .desc{
+  font-size:13px;
+  line-height:1.6;
+  color:rgba(255,255,255,0.45);
+  font-weight:300;
+}
+
+.cta-row{
+  margin-top:64px;
+  display:flex;
+  align-items:center;
+  gap:32px;
+  opacity:0;
+  transition:opacity 0.9s ease;
+}
+.cta-btn{
+  display:flex;align-items:center;gap:10px;
+  color:rgba(255,255,255,0.5);
+  font-size:13px;letter-spacing:0.12em;text-transform:uppercase;
+  border:1px solid rgba(255,255,255,0.18);
+  background:rgba(0,0,0,0.6);
+  padding:7px 14px;
+  border-radius:20px;
+  cursor:pointer;
+  transition:color 0.2s, background 0.2s;
+}
+.cta-btn:hover{color:rgba(255,255,255,0.95);background:rgba(255,255,255,0.1)}
+.cta-btn:hover .arr-unicode{color:rgba(255,255,255,0.95)}
+
+#overlay{position:fixed;inset:0;background:#080810;z-index:50;pointer-events:none;opacity:0;transition:opacity 0.7s ease}
+#overlay.fade{opacity:1;pointer-events:all}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<button id="home-btn">← Home</button>
+
+<div id="content">
+  <div class="eyebrow">Tecniche di Animazione 3D - About</div>
+  <h1>Il movimento come<br>mezzo, non fine</h1>
+
+  <div class="block" id="b0">
+    <div class="block-label">Il progetto</div>
+    <p>
+      Siamo fatti di movimento. Il cuore batte, il sangue scorre, i neuroni si propagano in onde elettriche. Respiriamo seguendo ritmi, invecchiamo seguendo traiettorie, amiamo seguendo forze che non sappiamo del tutto nominare. Non subiamo le leggi fisiche — <em>le incarniamo</em>. La gravità non è qualcosa che agisce su di noi: è parte di ciò che siamo, è la stessa forza che tiene insieme gli atomi del nostro corpo.
+    </p>
+    <p>
+      <em>Motus</em> parte da questa premessa. Non è un'animazione che si guarda dall'esterno — è un ambiente in cui le stesse leggi che governano la natura diventano <em>visibili e toccabili</em>. Invece di produrre un'animazione tradizionale con keyframe e timeline, si è scelto di costruire un <em>sistema generativo</em> in cui il movimento emerge in tempo reale dall'interazione tra l'utente e la fisica.
+    </p>
+    <p>
+      Chi esplora il sito non è spettatore: diventa parte della simulazione.
+      <br>Ogni posizione del cursore è una scelta compositiva.
+      <br>Il risultato visivo non è mai lo stesso.
+    </p>
+  </div>
+
+  <div class="divider" id="d1"></div>
+
+  <div class="block" id="b1">
+    <div class="block-label">Perché il web</div>
+    <p>
+      Il browser è l'unico medium in cui un'animazione può essere <em>veramente interattiva</em> senza richiedere installazioni o software specifici. Canvas 2D con requestAnimationFrame garantisce un loop di rendering a 60fps — la stessa logica di un motore grafico, ma accessibile a chiunque con un link.
+    </p>
+    <p>
+      La scelta del web è anche una scelta di <em>accessibilità del linguaggio</em>: il codice è leggibile, aperto, modificabile. Il progetto può essere ispirato, studiato.
+    </p>
+  </div>
+
+  <div class="divider" id="d2"></div>
+
+  <div class="block" id="b2">
+    <div class="block-label">Le cinque leggi fisiche</div>
+    <p>Ogni modalità rappresenta una diversa interpretazione del movimento.
+    Dietro ogni nome esiste una legge fisica reale, ma il linguaggio scelto trasforma il fenomeno in una metafora più astratta e filosofica.
+    La simulazione non mostra soltanto particelle in moto: mostra relazioni, tensioni, cicli e connessioni invisibili.
+      <br>
+      <br><em>Destino</em> — corrisponde alla <em>gravità</em>.
+    Ogni elemento viene attirato verso un centro inevitabile. Il movimento nasce dalla tensione verso qualcosa che richiama tutto a sé.
+
+    <br><br><em>Ritorno</em> — corrisponde alle <em>orbite</em>.
+    Le traiettorie non finiscono mai davvero: ruotano attorno alla loro origine, trasformando la caduta in ciclo continuo.
+
+    <br><br><em>Risonanza</em> — corrisponde alle <em>onde</em>.
+    Ogni vibrazione modifica lo spazio circostante. Il movimento si propaga come un’eco, creando connessioni invisibili tra elementi lontani.
+
+    <br><br><em>Attrazione</em> — corrisponde al <em>magnetismo</em>.
+    Forze opposte convivono nello stesso sistema: avvicinamento e repulsione generano equilibrio instabile e trasformazione continua.
+
+    <br><br><em>Origine</em> — corrisponde al <em>caos deterministico</em>.
+    Piccole variazioni iniziali producono evoluzioni completamente diverse. Ogni struttura nasce da condizioni minime, spesso invisibili.
+</p>
+    <div class="modes" style="margin-top:20px">
+
+    <div class="mode-card">
+      <div class="icon">🌑</div>
+      <div class="name">Destino</div>
+      <div class="desc">
+        Gravità — attrazione inevitabile verso un centro.
+      </div>
+    </div>
+
+    <div class="mode-card">
+      <div class="icon">🔄</div>
+      <div class="name">Ritorno</div>
+      <div class="desc">
+        Orbite — il movimento diventa ciclo continuo.
+      </div>
+    </div>
+
+    <div class="mode-card">
+      <div class="icon">🌊</div>
+      <div class="name">Risonanza</div>
+      <div class="desc">
+        Onde — propagazione e connessione nello spazio.
+      </div>
+    </div>
+
+    <div class="mode-card">
+      <div class="icon">✨</div>
+      <div class="name">Attrazione</div>
+      <div class="desc">
+        Magnetismo — equilibrio tra forze opposte.
+      </div>
+    </div>
+
+    <div class="mode-card" style="grid-column:1/-1">
+      <div class="icon">🌀</div>
+      <div class="name">Origine</div>
+      <div class="desc">
+        Caos deterministico — complessità generata da condizioni iniziali minime.
+      </div>
+    </div>
+
+    </div><!-- fine .modes -->
+  </div><!-- fine #b2 -->
+
+  <div class="divider" id="d3"></div>
+
+  <div class="block" id="b3">
+    <div class="block-label">Scelte estetiche</div>
+    <p>
+      Il fondo scuro con scie luminose richiama le fotografie a lunga esposizione e le visualizzazioni scientifiche del moto — streak lines, diagrammi di fase, traiettorie di particelle in fisica delle alte energie. Non è estetica arbitraria: <em>il colore codifica la velocità</em>. Una particella lenta è fredda e tenue; una veloce vira verso tonalità più calde e sature.
+    </p>
+    <p>
+      La UI è volutamente minima — pillole semitrasparenti che non competono con il contenuto. L'interfaccia deve scomparire, lasciando spazio al movimento.
+    </p>
+  </div>
+
+  <div class="divider" id="d4"></div>
+
+  <div class="block" id="b4new">
+    <div class="block-label">I parametri, spiegati</div>
+    <p>
+      Nessun valore nel codice è arbitrario. Ogni costante numerica ha una radice fisica o matematica precisa — la scelta creativa non sta nell'inventare numeri, ma nel decidere <em>quali leggi applicare</em> e quanto pesarle.
+    </p>
+    <p>
+      In <em>Gravità</em> la forza segue la legge di gravitazione di Newton: decresce con il quadrato della distanza (<em>F = G · m / r²</em>). Nel codice questo diventa <em>f = 400 / dist²</em>, con un limite massimo che evita accelerazioni infinite quando una particella si avvicina troppo al cursore. Il coefficiente 0.988 per frame simula la resistenza dell'aria — ogni fotogramma la velocità decade leggermente, come in un fluido reale.
+    </p>
+    <p>
+      In <em>Orbite</em> la traiettoria orbitale nasce da due componenti sovrapposte: una forza centripeta verso il cursore e una forza perpendicolare, ottenuta ruotando il vettore direzione di 90° (<em>-dy, dx</em>). È esattamente il meccanismo che tiene i pianeti in orbita — una caduta continua verso il centro che, grazie alla velocità laterale, manca sempre il bersaglio.
+    </p>
+    <p>
+      In <em>Onde</em> il campo di forze è generato da <em>sin(x · k + t · ω)</em> e <em>cos(y · k + t · ω)</em>. I valori 0.03 e 0.025 sono i numeri d'onda — la frequenza spaziale dell'oscillazione. I valori 0.04 e 0.03 sono le frequenze temporali. È la stessa struttura matematica usata per simulare fluidi e vento nella computer grafica generativa, chiamata <em>flow field</em>.
+    </p>
+    <p>
+      In <em>Magnetismo</em> ogni particella ha una fase individuale casuale assegnata alla creazione. La funzione <em>sin(tick · 0.02 + phase)</em> fa oscillare il segno della forza nel tempo — attrattiva o repulsiva — in modo asincrono tra le particelle. La repulsione ravvicinata (<em>F ∝ 1/r</em> sotto i 40 pixel) riprende la forza di Coulomb tra cariche dello stesso segno.
+    </p>
+    <p>
+      In <em>Caos</em> il campo vettoriale dipende sia dalla posizione nello spazio che dal tempo: <em>sin(y · k + t)</em>, <em>cos(x · k + t)</em>. Questa dipendenza congiunta genera <em>sensibilità alle condizioni iniziali</em> — due particelle partite da punti quasi identici divergono rapidamente verso traiettorie completamente diverse. È il principio matematico alla base degli attrattori caotici di Lorenz.
+    </p>
+  </div>
+
+  <div class="divider" id="d5"></div>
+
+  <div class="block" id="b4">
+    <div class="block-label">Animazione procedurale</div>
+    <p>
+      Nelle tecniche di animazione classica si studiano curve di accelerazione, interpolazioni, ease-in e ease-out. In questo progetto quelle stesse curve esistono — ma sono <em>generate dalla fisica in ogni frame</em>, non disegnate a mano su una timeline. È animazione procedurale: una delle direzioni più usate nell'industria, dagli effetti speciali cinematografici alle simulazioni architetturali.
+    </p>
+    <p>
+      La differenza concettuale è profonda: in un'animazione tradizionale esiste un autore e uno spettatore. Qui chi interagisce <em>è</em> l'autore, ogni volta in modo diverso.
+    </p>
+  </div>
+
+  <div class="cta-row" id="cta-row">
+    <button class="cta-btn" id="go-sim">
+      <span>Esplora la simulazione</span>
+      <span style="font-size:16px;line-height:1;color:rgba(255,255,255,0.35);transition:color 0.3s" class="arr-unicode">→</span>
+    </button>
+  </div>
+</div>
+
+<div id="overlay"></div>
+
+<script>
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+let W,H,tick=0,particles=[];
+const mouse={x:0,y:0};
+
+function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}
+resize();
+window.addEventListener('resize',resize);
+window.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;});
+
+function rand(a,b){return a+Math.random()*(b-a)}
+class Particle{
+  constructor(){
+    this.x=rand(0,W);this.y=rand(0,H);
+    this.vx=rand(-0.3,0.3);this.vy=rand(-0.3,0.3);
+    this.r=rand(0.8,2.5);this.hue=rand(200,280);
+    this.trail=[];this.phase=rand(0,Math.PI*2);
+  }
+}
+for(let i=0;i<140;i++) particles.push(new Particle());
+
+function draw(){
+  tick++;
+  ctx.fillStyle='rgba(8,8,16,0.14)';ctx.fillRect(0,0,W,H);
+  particles.forEach(p=>{
+    const dx=mouse.x-p.x,dy=mouse.y-p.y,dist=Math.sqrt(dx*dx+dy*dy)+1;
+    p.vx+=Math.sin(p.y*0.018+tick*0.01+p.phase)*0.04;
+    p.vy+=Math.cos(p.x*0.016+tick*0.012+p.phase)*0.04;
+    if(dist<250){p.vx+=dx/dist*0.025;p.vy+=dy/dist*0.025;}
+    p.vx*=0.988;p.vy*=0.988;
+    const spd=Math.sqrt(p.vx*p.vx+p.vy*p.vy);
+    if(spd>1.8){const s=1.8/spd;p.vx*=s;p.vy*=s;}
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<-10)p.x=W+10;if(p.x>W+10)p.x=-10;
+    if(p.y<-10)p.y=H+10;if(p.y>H+10)p.y=-10;
+    p.trail.push({x:p.x,y:p.y});if(p.trail.length>16)p.trail.shift();
+    if(p.trail.length>2){
+      ctx.beginPath();ctx.moveTo(p.trail[0].x,p.trail[0].y);
+      for(let i=1;i<p.trail.length;i++) ctx.lineTo(p.trail[i].x,p.trail[i].y);
+      ctx.strokeStyle=`hsla(${p.hue},65%,60%,0.13)`;
+      ctx.lineWidth=p.r*0.5;ctx.lineCap='round';ctx.stroke();
+    }
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=`hsla(${p.hue},70%,68%,0.45)`;ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+draw();
+
+// Entrata a cascata
+const els=[
+  {el:document.querySelector('.eyebrow'),delay:300},
+  {el:document.querySelector('h1'),delay:600},
+  {el:document.getElementById('b0'),delay:900},
+  {el:document.getElementById('d1'),delay:1100},
+  {el:document.getElementById('b1'),delay:1200},
+  {el:document.getElementById('d2'),delay:1350},
+  {el:document.getElementById('b2'),delay:1450},
+  {el:document.getElementById('d3'),delay:1600},
+  {el:document.getElementById('b3'),delay:1700},
+  {el:document.getElementById('d4'),delay:1850},
+  {el:document.getElementById('b4new'),delay:1950},
+  {el:document.getElementById('d5'),delay:2150},
+  {el:document.getElementById('b4'),delay:2250},
+  {el:document.getElementById('cta-row'),delay:2500},
+];
+els.forEach(({el,delay})=>{
+  setTimeout(()=>{
+    el.style.opacity='1';
+    if(el.style.transform!==undefined) el.style.transform='translateY(0)';
+  },delay);
+});
+
+function goTo(url){
+  const ov=document.getElementById('overlay');
+  ov.classList.add('fade');
+  setTimeout(()=>{window.location.href=url;},700);
+}
+document.getElementById('home-btn').addEventListener('click',()=>goTo('index.html'));
+document.getElementById('go-sim').addEventListener('click',()=>goTo('movimento.html'));
+</script>
+</body>
+</html>

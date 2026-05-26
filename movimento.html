@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movimento</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#080810}
+canvas{display:block;width:100%;height:100%;cursor:none}
+#ui{position:fixed;top:16px;left:16px;display:flex;flex-direction:column;gap:8px;z-index:10}
+.pill{
+  background:rgba(0,0,0,0.6);
+  color:#fff;
+  font:13px/1 system-ui,sans-serif;
+  padding:7px 14px;
+  border-radius:20px;
+  cursor:pointer;
+  border:1px solid rgba(255,255,255,0.18);
+  transition:background .2s;
+  user-select:none;
+}
+.pill:hover{background:rgba(80,80,200,0.7)}
+.pill.active{background:rgba(80,80,200,0.9);border-color:rgba(120,120,255,0.4)}
+#home-btn{
+  position:fixed;
+  top:16px;right:16px;
+  z-index:10;
+  background:rgba(0,0,0,0.6);
+  color:rgba(255,255,255,0.55);
+  font:13px/1 system-ui,sans-serif;
+  padding:7px 14px;
+  border-radius:20px;
+  cursor:pointer;
+  border:1px solid rgba(255,255,255,0.18);
+  transition:background .2s, color .2s;
+  user-select:none;
+  display:flex;align-items:center;gap:7px;
+  letter-spacing:0.06em;
+}
+#home-btn:hover{background:rgba(255,255,255,0.1);color:#fff}
+#about-btn{
+  position:fixed;top:58px;right:16px;z-index:10;
+  background:rgba(0,0,0,0.6);color:rgba(255,255,255,0.55);
+  font:13px/1 system-ui,sans-serif;padding:7px 14px;border-radius:20px;
+  cursor:pointer;border:1px solid rgba(255,255,255,0.18);
+  transition:background .2s,color .2s;user-select:none;letter-spacing:0.06em;
+}
+#about-btn:hover{background:rgba(255,255,255,0.1);color:#fff}
+#overlay{position:fixed;inset:0;background:#080810;z-index:50;pointer-events:none;opacity:0;transition:opacity 0.7s ease}
+#overlay.fade{opacity:1;pointer-events:all}
+#info{
+  position:fixed;
+  bottom:14px;
+  left:50%;
+  transform:translateX(-50%);
+  color:rgba(255,255,255,0.35);
+  font:12px/1.5 system-ui,sans-serif;
+  pointer-events:none;
+  white-space:nowrap;
+}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="ui">
+  <div class="pill active" data-mode="gravity">🌍 Destino → Gravità</div>
+  <div class="pill" data-mode="orbit">🪐 Ritorno → Orbite </div>
+  <div class="pill" data-mode="wave">〰️ Risonanza → Onde</div>
+  <div class="pill" data-mode="magnet">🧲 Attrazione → Magnetismo </div>
+  <div class="pill" data-mode="chaos">🌀 Origine → Caos</div>
+</div>
+<button id="home-btn">← Home</button>
+<button id="about-btn">← About</button>
+<div id="info">Muovi il cursore · Clicca per impulso</div>
+<div id="overlay"></div>
+<script>
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+let W,H,mode='gravity',mouse={x:0,y:0},tick=0,particles=[];
+
+const PHILOSOPHY={
+  gravity:{
+    mode:['Il destino attrae.','Tutto cade verso il suo centro.','La gravità è la volontà del cosmo.','Siamo attratti da ciò che siamo.'],
+    click:['destino','caduta','gravità','attrazione','peso','centro','inevitabile']
+  },
+  orbit:{
+    mode:['Il ritorno è inevitabile.','Ogni cosa orbita ciò che ama.','Partire è già tornare.','Girare è esistere.'],
+    click:['ritorno','ciclo','orbita','eterno','rotazione','giro','cerchio']
+  },
+  wave:{
+    mode:['La risonanza connette tutto.','Vibriamo insieme.','Ogni onda è un eco.','Il mondo è frequenza.'],
+    click:['risonanza','eco','vibrazione','onda','sintonia','frequenza','impulso']
+  },
+  magnet:{
+    mode:["L'attrazione è scelta?",'I contrari si cercano.','Siamo poli di uno stesso campo.','Forza invisibile, reale.'],
+    click:['attrazione','polo','campo','forza','opposti','legame','tensione']
+  },
+  chaos:{
+    mode:["Dall'origine nasce tutto.",'Il caos è il primo ordine.','Prima del tutto, il tutto.','Nel disordine, la forma.'],
+    click:['origine','caos','inizio','vuoto','nascita','abisso','prima']
+  }
+};
+
+let floatingTexts=[];
+
+function resize(){
+  const dpr=window.devicePixelRatio||1;
+  W=window.innerWidth;
+  H=window.innerHeight;
+  cv.width=W*dpr;
+  cv.height=H*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  mouse.x=W/2;mouse.y=H/2;
+}
+resize();
+window.addEventListener('resize',()=>{resize();particles.forEach(p=>p.reset());});
+
+function rand(a,b){return a+Math.random()*(b-a)}
+
+class Particle{
+  constructor(){this.reset()}
+  reset(){
+    this.x=rand(0,W);this.y=rand(0,H);
+    this.vx=rand(-1.5,1.5);this.vy=rand(-1.5,1.5);
+    this.r=rand(1.5,4);
+    this.hue=rand(180,300);
+    this.trail=[];
+    this.mass=this.r*this.r;
+    this.phase=rand(0,Math.PI*2);
+  }
+}
+
+for(let i=0;i<280;i++) particles.push(new Particle());
+
+cv.addEventListener('mousemove',e=>{
+  mouse.x=e.clientX;mouse.y=e.clientY;
+});
+
+cv.addEventListener('click',e=>{
+  for(let i=0;i<35;i++){
+    const p=particles[Math.floor(Math.random()*particles.length)];
+    const a=rand(0,Math.PI*2),s=rand(3,9);
+    p.vx+=Math.cos(a)*s;p.vy+=Math.sin(a)*s;
+    p.x=mouse.x+rand(-20,20);p.y=mouse.y+rand(-20,20);
+  }
+  spawnClickWord(e.clientX,e.clientY);
+});
+
+document.querySelectorAll('.pill').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.pill').forEach(x=>x.classList.remove('active'));
+    el.classList.add('active');
+    mode=el.dataset.mode;
+    particles.forEach(p=>p.reset());
+    tick=0;
+    floatingTexts=[];
+    spawnModeText();
+  });
+});
+
+function spawnModeText(){
+  const phrases=PHILOSOPHY[mode].mode;
+  const text=phrases[Math.floor(Math.random()*phrases.length)];
+  floatingTexts.push({
+    text,x:W/2,y:H/2,
+    alpha:0,life:0,maxLife:180,
+    size:24,type:'mode'
+  });
+}
+
+function spawnClickWord(mx,my){
+  const words=PHILOSOPHY[mode].click;
+  const text=words[Math.floor(Math.random()*words.length)];
+  floatingTexts.push({
+    text,x:mx,y:my-20,
+    alpha:0,life:0,maxLife:90,
+    size:15,type:'click',vy:-0.6
+  });
+}
+
+function drawFloatingTexts(){
+  floatingTexts.forEach(t=>{
+    t.life++;
+    const progress=t.life/t.maxLife;
+    let a;
+    if(progress<0.15) a=progress/0.15;
+    else if(progress>0.7) a=1-(progress-0.7)/0.3;
+    else a=1;
+    if(t.type==='click') t.y+=(t.vy||0);
+    ctx.save();
+    ctx.globalAlpha=1;
+    if(t.type==='mode'){
+      ctx.font=`300 ${t.size}px -apple-system,BlinkMacSystemFont,system-ui,sans-serif`;
+      ctx.fillStyle=`rgba(255,255,255,${(a*0.92).toFixed(3)})`;
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillText(t.text,t.x,t.y);
+    } else {
+      ctx.font=`500 ${t.size}px -apple-system,BlinkMacSystemFont,system-ui,sans-serif`;
+      const hue=mode==='wave'?200:mode==='chaos'?(tick*0.5%360):260;
+      ctx.fillStyle=`hsla(${hue},80%,82%,${(a*0.9).toFixed(3)})`;
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillText(t.text.toUpperCase(),t.x,t.y);
+    }
+    ctx.restore();
+  });
+  floatingTexts=floatingTexts.filter(t=>t.life<t.maxLife);
+}
+
+function applyPhysics(p){
+  const dx=mouse.x-p.x,dy=mouse.y-p.y;
+  const dist=Math.sqrt(dx*dx+dy*dy)+1;
+  if(mode==='gravity'){
+    const f=Math.min(400/(dist*dist),2);
+    p.vx+=dx/dist*f;p.vy+=dy/dist*f;
+    p.vx*=0.988;p.vy*=0.988;
+  } else if(mode==='orbit'){
+    const f=300/(dist*dist+200);
+    p.vx+=dx/dist*f;p.vy+=dy/dist*f;
+    p.vx+=-dy/dist*0.8;p.vy+=dx/dist*0.8;
+    p.vx*=0.99;p.vy*=0.99;
+  } else if(mode==='wave'){
+    const wave=Math.sin(p.x*0.03+tick*0.04)*20;
+    const wave2=Math.cos(p.y*0.025+tick*0.03)*15;
+    p.vx+=(wave2-p.vx)*0.04;p.vy+=(wave-p.vy)*0.04;
+    if(dist<120){p.vx+=dx/dist*1.5;p.vy+=dy/dist*1.5;}
+    p.vx*=0.96;p.vy*=0.96;
+  } else if(mode==='magnet'){
+    const polarity=Math.sin(tick*0.02+p.phase)>0?1:-1;
+    const f=polarity*Math.min(200/(dist*dist),1.5);
+    p.vx+=dx/dist*f;p.vy+=dy/dist*f;
+    particles.forEach(q=>{
+      if(q===p) return;
+      const ex=q.x-p.x,ey=q.y-p.y,ed=Math.sqrt(ex*ex+ey*ey)+1;
+      if(ed<40){const rep=0.3/ed;p.vx-=ex*rep;p.vy-=ey*rep;}
+    });
+    p.vx*=0.95;p.vy*=0.95;
+  } else if(mode==='chaos'){
+    const a=Math.sin(p.y*0.04+tick*0.02)*3;
+    const b=Math.cos(p.x*0.04+tick*0.025)*3;
+    p.vx+=a+(dx/dist)*0.3;p.vy+=b+(dy/dist)*0.3;
+    if(dist<80){p.vx-=dx/dist*2;p.vy-=dy/dist*2;}
+    p.vx*=0.97;p.vy*=0.97;
+  }
+  const speed=Math.sqrt(p.vx*p.vx+p.vy*p.vy);
+  if(speed>8){const s=8/speed;p.vx*=s;p.vy*=s;}
+}
+
+function draw(){
+  tick++;
+  ctx.fillStyle='rgba(8,8,16,0.18)';ctx.fillRect(0,0,W,H);
+
+  particles.forEach(p=>{
+    applyPhysics(p);
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0)p.x+=W; if(p.x>W)p.x-=W;
+    if(p.y<0)p.y+=H; if(p.y>H)p.y-=H;
+    p.trail.push({x:p.x,y:p.y});
+    if(p.trail.length>14) p.trail.shift();
+
+    const speed=Math.sqrt(p.vx*p.vx+p.vy*p.vy);
+    const hue=mode==='wave'?180+p.x/W*120:mode==='chaos'?tick*0.3%360:p.hue+speed*8;
+
+    if(p.trail.length>2){
+      ctx.beginPath();
+      ctx.moveTo(p.trail[0].x,p.trail[0].y);
+      for(let i=1;i<p.trail.length;i++) ctx.lineTo(p.trail[i].x,p.trail[i].y);
+      ctx.strokeStyle=`hsla(${hue},80%,65%,0.35)`;
+      ctx.lineWidth=p.r*0.6;ctx.lineCap='round';ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=`hsla(${hue},85%,72%,0.9)`;
+    ctx.fill();
+  });
+
+  ctx.beginPath();ctx.arc(mouse.x,mouse.y,6,0,Math.PI*2);
+  ctx.strokeStyle='rgba(255,255,255,0.7)';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.beginPath();ctx.arc(mouse.x,mouse.y,2,0,Math.PI*2);
+  ctx.fillStyle='white';ctx.fill();
+
+  const ripple=(tick*2)%80;
+  ctx.beginPath();ctx.arc(mouse.x,mouse.y,ripple,0,Math.PI*2);
+  ctx.strokeStyle=`rgba(255,255,255,${0.25*(1-ripple/80)})`;
+  ctx.lineWidth=1;ctx.stroke();
+
+  drawFloatingTexts();
+  requestAnimationFrame(draw);
+}
+draw();
+requestAnimationFrame(()=>spawnModeText());
+
+function goTo(url){
+  const ov=document.getElementById('overlay');
+  ov.classList.add('fade');
+  setTimeout(()=>{window.location.href=url;},700);
+}
+document.getElementById('home-btn').addEventListener('click',()=>goTo('index.html'));
+document.getElementById('about-btn').addEventListener('click',()=>goTo('about.html'));
+</script>
+</body>
+</html>
