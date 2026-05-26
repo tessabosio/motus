@@ -59,6 +59,30 @@ canvas{display:block;width:100%;height:100%;cursor:none}
   pointer-events:none;
   white-space:nowrap;
 }
+
+@media(max-width:600px){
+  #ui{
+    flex-direction:row;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    top:auto;
+    bottom:40px;
+    left:0;right:0;
+    padding:0 12px 4px;
+    gap:8px;
+    scrollbar-width:none;
+  }
+  #ui::-webkit-scrollbar{display:none}
+  .pill{
+    white-space:nowrap;
+    flex-shrink:0;
+    font-size:12px;
+    padding:6px 12px;
+  }
+  #home-btn{font-size:12px;padding:6px 11px}
+  #about-btn{font-size:12px;padding:6px 11px;top:52px}
+  #info{bottom:auto;top:8px;left:50%;transform:translateX(-50%);font-size:11px;display:none}
+}
 </style>
 </head>
 <body>
