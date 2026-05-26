@@ -141,6 +141,17 @@ h1{
 .cta-btn:hover{color:rgba(255,255,255,0.95);background:rgba(255,255,255,0.1)}
 .cta-btn:hover .arr-unicode{color:rgba(255,255,255,0.95)}
 
+@media(max-width:600px){
+  #content{padding:80px 20px 80px}
+  h1{font-size:clamp(28px,8vw,48px);margin-bottom:40px}
+  .modes{grid-template-columns:1fr}
+  .mode-card[style*="grid-column"]{grid-column:auto}
+  .block{margin-bottom:36px}
+  .divider{margin:36px 0}
+  .cta-row{margin-top:44px}
+  #home-btn{font-size:12px;padding:6px 11px}
+}
+
 #overlay{position:fixed;inset:0;background:#080810;z-index:50;pointer-events:none;opacity:0;transition:opacity 0.7s ease}
 #overlay.fade{opacity:1;pointer-events:all}
 </style>
