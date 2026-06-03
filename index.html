@@ -40,19 +40,20 @@ canvas{position:fixed;inset:0;width:100%;height:100%}
 }
 #sub{
   font-size:13px;
-  color:rgba(255,255,255,0.28);
-  letter-spacing:0.08em;
+  color:rgba(255,255,255,0.55);
+  letter-spacing:0.06em;
   margin-top:18px;
   opacity:0;
   transition:opacity 1s ease;
   transition-delay:0s;
+  font-style:italic;
 }
 #attribution{
   font-size:11px;
-  color:rgba(255,255,255,0.18);
+  color:rgba(255,255,255,0.3);
   letter-spacing:0.08em;
-  font-style:italic;
-  margin-top:8px;
+  font-style:normal;
+  margin-top:7px;
   opacity:0;
   transition:opacity 1s ease;
 }
@@ -109,68 +110,80 @@ canvas{position:fixed;inset:0;width:100%;height:100%}
 <div id="overlay"></div>
 
 <script>
+
+/* ── PLASMA LAVA ─────────────────────────────────────────────────────────── */
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
-let W,H,tick=0,particles=[];
-const mouse={x:0,y:0};
+let W,H,tick=0;
+const mouse={x:-1,y:-1};
 
 function resize(){
-  W=cv.width=window.innerWidth;
-  H=cv.height=window.innerHeight;
+  const dpr=window.devicePixelRatio||1;
+  W=window.innerWidth;H=window.innerHeight;
+  cv.width=W*dpr;cv.height=H*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
 }
 resize();
 window.addEventListener('resize',resize);
 window.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;});
 
-function rand(a,b){return a+Math.random()*(b-a)}
+/* metaballs */
+const blobs=[
+  {x:0.3,y:0.4,vx:0.0006,vy:0.0004,r:0.22,hue:18},
+  {x:0.6,y:0.5,vx:-0.0005,vy:0.0007,r:0.26,hue:340},
+  {x:0.5,y:0.3,vx:0.0007,vy:-0.0005,r:0.18,hue:45},
+  {x:0.2,y:0.6,vx:0.0004,vy:0.0006,r:0.20,hue:8},
+  {x:0.75,y:0.65,vx:-0.0006,vy:-0.0004,r:0.24,hue:28},
+  {x:0.5,y:0.7,vx:0.0003,vy:-0.0008,r:0.15,hue:355},
+];
 
-class Particle{
-  constructor(){
-    this.x=rand(0,W);this.y=rand(0,H);
-    this.vx=rand(-0.4,0.4);this.vy=rand(-0.4,0.4);
-    this.r=rand(1,3);
-    this.hue=rand(200,280);
-    this.trail=[];
-    this.phase=rand(0,Math.PI*2);
-  }
-}
-for(let i=0;i<180;i++) particles.push(new Particle());
-
-function draw(){
+function drawPlasma(){
   tick++;
-  ctx.fillStyle='rgba(8,8,16,0.15)';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#060305';
+  ctx.fillRect(0,0,W,H);
 
-  particles.forEach(p=>{
-    const dx=mouse.x-p.x,dy=mouse.y-p.y;
-    const dist=Math.sqrt(dx*dx+dy*dy)+1;
-    const wave=Math.sin(p.x*0.02+tick*0.015+p.phase)*0.06;
-    const wave2=Math.cos(p.y*0.018+tick*0.012+p.phase)*0.06;
-    p.vx+=wave2;p.vy+=wave;
-    if(dist<200){
-      p.vx+=dx/dist*0.04;p.vy+=dy/dist*0.04;
+  /* aggiorna posizioni con rimbalzo morbido */
+  blobs.forEach(b=>{
+    b.x+=b.vx*(1+Math.sin(tick*0.003)*0.3);
+    b.y+=b.vy*(1+Math.cos(tick*0.0025)*0.3);
+    if(b.x<0.05||b.x>0.95) b.vx*=-1;
+    if(b.y<0.05||b.y>0.95) b.vy*=-1;
+    /* debole attrazione verso mouse */
+    if(mouse.x>0){
+      const mx=mouse.x/W, my=mouse.y/H;
+      b.vx+=(mx-b.x)*0.000015;
+      b.vy+=(my-b.y)*0.000015;
     }
-    p.vx*=0.985;p.vy*=0.985;
-    const speed=Math.sqrt(p.vx*p.vx+p.vy*p.vy);
-    if(speed>2.5){const s=2.5/speed;p.vx*=s;p.vy*=s;}
-    p.x+=p.vx;p.y+=p.vy;
-    if(p.x<-10)p.x=W+10; if(p.x>W+10)p.x=-10;
-    if(p.y<-10)p.y=H+10; if(p.y>H+10)p.y=-10;
-    p.trail.push({x:p.x,y:p.y});
-    if(p.trail.length>18) p.trail.shift();
-
-    if(p.trail.length>2){
-      ctx.beginPath();
-      ctx.moveTo(p.trail[0].x,p.trail[0].y);
-      for(let i=1;i<p.trail.length;i++) ctx.lineTo(p.trail[i].x,p.trail[i].y);
-      ctx.strokeStyle=`hsla(${p.hue},70%,65%,0.18)`;
-      ctx.lineWidth=p.r*0.5;ctx.lineCap='round';ctx.stroke();
-    }
-    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    ctx.fillStyle=`hsla(${p.hue},75%,70%,0.6)`;ctx.fill();
   });
 
-  requestAnimationFrame(draw);
+  /* disegna ogni blob come radial gradient in screen mode */
+  ctx.save();
+  ctx.globalCompositeOperation='screen';
+  blobs.forEach(b=>{
+    const cx=b.x*W, cy=b.y*H;
+    const r=b.r*Math.min(W,H);
+    const pulse=1+Math.sin(tick*0.018+b.hue)*0.08;
+    const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r*pulse);
+    g.addColorStop(0,  `hsla(${b.hue},100%,70%,0.55)`);
+    g.addColorStop(0.4,`hsla(${b.hue},90%,50%,0.30)`);
+    g.addColorStop(0.75,`hsla(${b.hue+20},80%,35%,0.12)`);
+    g.addColorStop(1,  `hsla(${b.hue},70%,20%,0)`);
+    ctx.fillStyle=g;
+    ctx.fillRect(0,0,W,H);
+  });
+  ctx.restore();
+
+  /* vignette scura ai bordi */
+  const vig=ctx.createRadialGradient(W/2,H/2,H*0.2,W/2,H/2,H*0.85);
+  vig.addColorStop(0,'rgba(0,0,0,0)');
+  vig.addColorStop(1,'rgba(0,0,0,0.72)');
+  ctx.fillStyle=vig;
+  ctx.fillRect(0,0,W,H);
+
+  requestAnimationFrame(drawPlasma);
 }
-draw();
+drawPlasma();
+/* ── FINE PLASMA ─────────────────────────────────────────────────────────── */
+
 
 // Sequenza di entrata
 const title=document.getElementById('title');
