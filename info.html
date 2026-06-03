@@ -29,18 +29,19 @@ canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0}
 #manifesto{
   font-size:clamp(13px,1.6vw,18px);
   font-weight:300;
-  color:rgba(255,255,255,0.38);
-  letter-spacing:0.08em;
+  color:rgba(255,255,255,0.62);
+  letter-spacing:0.06em;
   text-align:center;
   line-height:1.9;
   max-width:520px;
   padding:0 32px;
   opacity:0;
+  font-style:italic;
   transform:translateY(10px);
   transition:opacity 1s ease, transform 1s ease;
 }
 #manifesto em{
-  color:rgba(255,255,255,0.75);
+  color:rgba(255,255,255,0.9);
   font-style:normal;
 }
 
@@ -94,7 +95,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0}
   inset:0;
   display:flex;align-items:center;justify-content:center;
   font-size:22px;
-  opacity:0.5;
+  opacity:0.75;
   transition:opacity 0.4s;
   user-select:none;
 }
@@ -105,19 +106,19 @@ canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0}
   font-size:11px;
   letter-spacing:0.18em;
   text-transform:uppercase;
-  color:rgba(255,255,255,0.3);
+  color:rgba(255,255,255,0.65);
   transition:color 0.4s;
 }
 .mcard:hover .mcard-name{color:rgba(255,255,255,0.9);}
 .mcard-phys{
   font-size:10px;
   letter-spacing:0.12em;
-  color:rgba(255,255,255,0.12);
+  color:rgba(255,255,255,0.38);
   margin-top:5px;
   transition:color 0.4s;
   font-style:italic;
 }
-.mcard:hover .mcard-phys{color:rgba(255,255,255,0.38);}
+.mcard:hover .mcard-phys{color:rgba(255,255,255,0.65);}
 
 #cta-row{
   margin-top:clamp(40px,6vh,72px);
@@ -160,7 +161,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0}
 <div id="stage">
 
   <div id="manifesto">
-    Non subiamo le leggi fisiche —<br>
+    Non subiamo le leggi fisiche,<br>
     <em>le incarniamo.</em><br>
     Ogni traiettoria è una scelta.<br>
     Ogni forza, un significato.
@@ -243,58 +244,96 @@ canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0}
 
 <script>
 /* canvas background */
+/* ── CAMPO DI FORZE ──────────────────────────────────────────────────────── */
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
-let W,H,tick=0,particles=[];
-const mouse={x:0,y:0};
+let W,H,tick=0;
+const mouse={x:-1,y:-1};
 
 function resize(){
   const dpr=window.devicePixelRatio||1;
   W=window.innerWidth;H=window.innerHeight;
   cv.width=W*dpr;cv.height=H*dpr;
   ctx.setTransform(dpr,0,0,dpr,0,0);
+  initParticles();
 }
-resize();
 window.addEventListener('resize',resize);
 window.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;});
 
-function rand(a,b){return a+Math.random()*(b-a)}
-class Particle{
-  constructor(){
-    this.x=rand(0,W);this.y=rand(0,H);
-    this.vx=rand(-0.3,0.3);this.vy=rand(-0.3,0.3);
-    this.r=rand(0.8,2.5);this.hue=rand(200,280);
-    this.trail=[];this.phase=rand(0,Math.PI*2);
+const NUM=520;
+let pts=[];
+
+function initParticles(){
+  pts=[];
+  for(let i=0;i<NUM;i++){
+    pts.push({
+      x:Math.random()*W, y:Math.random()*H,
+      age:Math.floor(Math.random()*80),
+      speed:Math.random()*1.2+0.4,
+      hue:190+Math.random()*60,
+      life:60+Math.floor(Math.random()*60),
+    });
   }
 }
-for(let i=0;i<140;i++) particles.push(new Particle());
 
-function drawBg(){
-  tick++;
-  ctx.fillStyle='rgba(8,8,16,0.14)';ctx.fillRect(0,0,W,H);
-  particles.forEach(p=>{
-    const dx=mouse.x-p.x,dy=mouse.y-p.y,dist=Math.sqrt(dx*dx+dy*dy)+1;
-    p.vx+=Math.sin(p.y*0.018+tick*0.01+p.phase)*0.04;
-    p.vy+=Math.cos(p.x*0.016+tick*0.012+p.phase)*0.04;
-    if(dist<250){p.vx+=dx/dist*0.025;p.vy+=dy/dist*0.025;}
-    p.vx*=0.988;p.vy*=0.988;
-    const spd=Math.sqrt(p.vx*p.vx+p.vy*p.vy);
-    if(spd>1.8){const s=1.8/spd;p.vx*=s;p.vy*=s;}
-    p.x+=p.vx;p.y+=p.vy;
-    if(p.x<-10)p.x=W+10;if(p.x>W+10)p.x=-10;
-    if(p.y<-10)p.y=H+10;if(p.y>H+10)p.y=-10;
-    p.trail.push({x:p.x,y:p.y});if(p.trail.length>16)p.trail.shift();
-    if(p.trail.length>2){
-      ctx.beginPath();ctx.moveTo(p.trail[0].x,p.trail[0].y);
-      for(let i=1;i<p.trail.length;i++) ctx.lineTo(p.trail[i].x,p.trail[i].y);
-      ctx.strokeStyle=`hsla(${p.hue},65%,60%,0.13)`;
-      ctx.lineWidth=p.r*0.5;ctx.lineCap='round';ctx.stroke();
-    }
-    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    ctx.fillStyle=`hsla(${p.hue},70%,68%,0.45)`;ctx.fill();
-  });
-  requestAnimationFrame(drawBg);
+function fieldAngle(x,y,t){
+  const k=0.004;
+  let angle = Math.sin(x*k + t*0.008) * Math.cos(y*k*0.9 + t*0.006) * Math.PI*2
+             + Math.cos(x*k*0.6 - y*k*0.7 + t*0.005) * Math.PI;
+  if(mouse.x>0){
+    const dx=mouse.x-x, dy=mouse.y-y;
+    const dist=Math.sqrt(dx*dx+dy*dy)+1;
+    const pull=Math.min(1,180/dist);
+    const mangle=Math.atan2(dy,dx);
+    angle=angle*(1-pull*0.7)+mangle*pull*0.7;
+  }
+  return angle;
 }
-drawBg();
+
+function drawField(){
+  tick++;
+  ctx.fillStyle='rgba(5,5,12,0.18)';
+  ctx.fillRect(0,0,W,H);
+
+  pts.forEach(p=>{
+    p.age++;
+    if(p.age>p.life){
+      p.x=Math.random()*W; p.y=Math.random()*H;
+      p.age=0; p.life=60+Math.floor(Math.random()*60);
+      p.hue=190+Math.random()*60;
+      p.speed=Math.random()*1.2+0.4;
+      return;
+    }
+    const angle=fieldAngle(p.x,p.y,tick);
+    const px=p.x, py=p.y;
+    p.x+=Math.cos(angle)*p.speed;
+    p.y+=Math.sin(angle)*p.speed;
+    let wrapped=false;
+    if(p.x<0){p.x=W;wrapped=true;} if(p.x>W){p.x=0;wrapped=true;}
+    if(p.y<0){p.y=H;wrapped=true;} if(p.y>H){p.y=0;wrapped=true;}
+    if(wrapped) return;
+
+    const lifeRatio=1-p.age/p.life;
+    const alpha=Math.sin(lifeRatio*Math.PI)*0.55;
+    const hueShift=p.hue+Math.sin(tick*0.01+p.speed)*18;
+    ctx.beginPath();
+    ctx.moveTo(px,py); ctx.lineTo(p.x,p.y);
+    ctx.strokeStyle=`hsla(${hueShift},75%,68%,${alpha})`;
+    ctx.lineWidth=0.9; ctx.lineCap='round'; ctx.stroke();
+  });
+
+  if(mouse.x>0){
+    const g=ctx.createRadialGradient(mouse.x,mouse.y,0,mouse.x,mouse.y,90);
+    g.addColorStop(0,'rgba(120,180,255,0.07)');
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  }
+
+  requestAnimationFrame(drawField);
+}
+resize();
+drawField();
+/* ── FINE CAMPO DI FORZE ─────────────────────────────────────────────────── */
+/* ── FINE AURORA ─────────────────────────────────────────────────────────── */
 
 /* punti orbitanti */
 const orbits=[
