@@ -152,6 +152,26 @@ h1{
   #home-btn{font-size:12px;padding:6px 11px}
 }
 
+.stag{
+  display:inline-flex;
+  align-items:baseline;
+  gap:6px;
+  font-size:12px;
+  letter-spacing:0.06em;
+  color:rgba(255,255,255,0.75);
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:6px;
+  padding:4px 9px;
+  line-height:1.4;
+}
+.sdesc{
+  font-size:11px;
+  color:rgba(255,255,255,0.3);
+  font-style:italic;
+  letter-spacing:0.03em;
+}
+
 #overlay{position:fixed;inset:0;background:#080810;z-index:50;pointer-events:none;opacity:0;transition:opacity 0.7s ease}
 #overlay.fade{opacity:1;pointer-events:all}
 </style>
@@ -297,6 +317,109 @@ h1{
 
   <div class="divider" id="d5"></div>
 
+  <div class="block" id="b5sound">
+    <div class="block-label">Il suono come fisica</div>
+    <p>
+      Ogni click nella simulazione produce un suono. Non si tratta di file audio preregistrati: i suoni sono <em>generati in tempo reale</em> dalla Web Audio API del browser, usando oscillatori, filtri e inviluppi costruiti interamente nel codice, senza dipendenze esterne.
+    </p>
+    <p>
+      La logica del suono segue la stessa del visivo: ogni <em>categoria fisica ha un timbro di base</em> riconoscibile, ma ogni parola che appare ha un suono diverso dagli altri. Trentacinque parole — trentacinque suoni unici.
+    </p>
+
+    <div class="sound-grid" style="margin-top:28px;display:flex;flex-direction:column;gap:14px">
+
+      <div class="sound-row" style="border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px 18px;background:rgba(255,255,255,0.03)">
+        <div style="font-size:13px;letter-spacing:0.08em;color:rgba(255,255,255,0.55);margin-bottom:10px">
+          🌍 <em style="color:rgba(255,255,255,0.85);font-style:normal">Destino · Gravità</em> —
+          sinusoidi basse che cadono verso frequenze sempre più gravi. Il timbro ricorda un peso che scende.
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <span class="stag">destino <span class="sdesc">tono che scende lento (160→40 Hz)</span></span>
+          <span class="stag">caduta <span class="sdesc">fischio che precipita + colpo finale</span></span>
+          <span class="stag">gravità <span class="sdesc">due sinusoidi gravi convergenti</span></span>
+          <span class="stag">attrazione <span class="sdesc">sale poi cade, come essere trascinati</span></span>
+          <span class="stag">peso <span class="sdesc">colpo sordo + sub basso</span></span>
+          <span class="stag">centro <span class="sdesc">pulsazione ritmica su nota fissa</span></span>
+          <span class="stag">inevitabile <span class="sdesc">tre colpi discendenti in sequenza</span></span>
+        </div>
+      </div>
+
+      <div class="sound-row" style="border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px 18px;background:rgba(255,255,255,0.03)">
+        <div style="font-size:13px;letter-spacing:0.08em;color:rgba(255,255,255,0.55);margin-bottom:10px">
+          🪐 <em style="color:rgba(255,255,255,0.85);font-style:normal">Ritorno · Orbite</em> —
+          arpeggiate che partono, salgono e tornano alla nota di partenza. Il suono gira su sé stesso.
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <span class="stag">ritorno <span class="sdesc">arco 220→440→220 Hz</span></span>
+          <span class="stag">ciclo <span class="sdesc">4 note che si ripetono due volte</span></span>
+          <span class="stag">orbita <span class="sdesc">vibrato lento (FM rotazionale)</span></span>
+          <span class="stag">eterno <span class="sdesc">fade-in e fade-out simmetrici</span></span>
+          <span class="stag">rotazione <span class="sdesc">6 note come lancette di orologio</span></span>
+          <span class="stag">giro <span class="sdesc">portamento circolare di frequenza</span></span>
+          <span class="stag">cerchio <span class="sdesc">trillo tra due note ravvicinate</span></span>
+        </div>
+      </div>
+
+      <div class="sound-row" style="border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px 18px;background:rgba(255,255,255,0.03)">
+        <div style="font-size:13px;letter-spacing:0.08em;color:rgba(255,255,255,0.55);margin-bottom:10px">
+          〰️ <em style="color:rgba(255,255,255,0.85);font-style:normal">Risonanza · Onde</em> —
+          modulazione AM/FM, battimenti e echi. Il suono si propaga nello spazio come una vibrazione reale.
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <span class="stag">risonanza <span class="sdesc">battimento tra 440 e 443 Hz</span></span>
+          <span class="stag">eco <span class="sdesc">suono + 3 echi decrescenti</span></span>
+          <span class="stag">vibrazione <span class="sdesc">FM ad alta frequenza (tremore)</span></span>
+          <span class="stag">onda <span class="sdesc">sweep sinusoidale su e giù</span></span>
+          <span class="stag">sintonia <span class="sdesc">due voci che convergono alla stessa nota</span></span>
+          <span class="stag">frequenza <span class="sdesc">tono puro preciso a 528 Hz</span></span>
+          <span class="stag">impulso <span class="sdesc">click + risonanza di stanza (bandpass)</span></span>
+        </div>
+      </div>
+
+      <div class="sound-row" style="border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px 18px;background:rgba(255,255,255,0.03)">
+        <div style="font-size:13px;letter-spacing:0.08em;color:rgba(255,255,255,0.55);margin-bottom:10px">
+          🧲 <em style="color:rgba(255,255,255,0.85);font-style:normal">Attrazione · Magnetismo</em> —
+          oscillatori triangolari, sempre in coppia. Due voci che si attraggono, si respingono o si bloccano in tensione.
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <span class="stag">attrazione <span class="sdesc">tono triangolare che sale poi scende</span></span>
+          <span class="stag">polo <span class="sdesc">nota singola stabile e definita</span></span>
+          <span class="stag">campo <span class="sdesc">fondamentale + due armoniche sovrapposte</span></span>
+          <span class="stag">forza <span class="sdesc">attacco forte e brevissimo</span></span>
+          <span class="stag">opposti <span class="sdesc">due toni che si scambiano di posto</span></span>
+          <span class="stag">legame <span class="sdesc">due voci che convergono e rimangono unite</span></span>
+          <span class="stag">tensione <span class="sdesc">tritono irrisolto (intervallo dissonante)</span></span>
+        </div>
+      </div>
+
+      <div class="sound-row" style="border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px 18px;background:rgba(255,255,255,0.03)">
+        <div style="font-size:13px;letter-spacing:0.08em;color:rgba(255,255,255,0.55);margin-bottom:10px">
+          🌀 <em style="color:rgba(255,255,255,0.85);font-style:normal">Origine · Caos</em> —
+          rumore bianco, sawtooth e oscillatori a frequenze casuali. Il suono non ha forma prevedibile.
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <span class="stag">origine <span class="sdesc">esplosione di rumore che diventa tono</span></span>
+          <span class="stag">caos <span class="sdesc">6 oscillatori random simultanei</span></span>
+          <span class="stag">inizio <span class="sdesc">silenzio, poi un suono chiaro</span></span>
+          <span class="stag">vuoto <span class="sdesc">quasi silenzio: rumore + sub 30 Hz</span></span>
+          <span class="stag">nascita <span class="sdesc">sweep ascendente sawtooth (40→880 Hz)</span></span>
+          <span class="stag">abisso <span class="sdesc">sub grave + rumore filtrato scuro</span></span>
+          <span class="stag">prima <span class="sdesc">discesa verso il silenzio + rumore acuto</span></span>
+        </div>
+      </div>
+
+    </div><!-- fine sound-grid -->
+
+    <p style="margin-top:24px">
+      La costruzione tecnica avviene attraverso una catena di nodi audio: un <em>OscillatorNode</em> o <em>AudioBufferSourceNode</em> (per il rumore) genera il segnale grezzo, che viene poi trasformato da un <em>BiquadFilterNode</em> — passa-basso per i suoni gravi, passa-banda per le risonanze, passa-alto per le texture acute — e infine il <em>GainNode</em> controlla l'inviluppo dinamico nel tempo.
+    </p>
+    <p>
+      L'inviluppo è la forma del volume nel tempo: attacco, sostegno, rilascio. In <em>Destino</em> è lento e pesante; in <em>Caos</em> è breve e irregolare. I parametri sono scritti con <em>exponentialRampToValueAtTime</em>, lo stesso tipo di curva usato nella fisica reale per descrivere il decadimento esponenziale — un'eco in una stanza, la carica di un condensatore, il raffreddamento di un corpo caldo.
+    </p>
+  </div>
+
+  <div class="divider" id="d6"></div>
+
   <div class="block" id="b4">
     <div class="block-label">Animazione procedurale</div>
     <p>
@@ -318,53 +441,106 @@ h1{
 <div id="overlay"></div>
 
 <script>
-const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
-let W,H,tick=0,particles=[];
-const mouse={x:0,y:0};
 
-function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}
+/* ── IPERSPAZIO ──────────────────────────────────────────────────────────── */
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+let W,H,tick=0;
+const mouse={x:-1,y:-1};
+
+function resize(){
+  const dpr=window.devicePixelRatio||1;
+  W=window.innerWidth;H=window.innerHeight;
+  cv.width=W*dpr;cv.height=H*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  initStars();
+}
+
+const mouse_real={x:0,y:0};
+window.addEventListener('mousemove',e=>{mouse_real.x=e.clientX;mouse_real.y=e.clientY;});
+
+/* stelle che viaggiano dall'origine verso l'esterno */
+const NUM=320;
+let stars=[];
+
+function initStars(){
+  stars=[];
+  for(let i=0;i<NUM;i++) stars.push(newStar(true));
+}
+
+function newStar(random_z=false){
+  const angle=Math.random()*Math.PI*2;
+  const speed=Math.random()*2.2+0.6;
+  return {
+    angle,
+    r:random_z?Math.random()*Math.hypot(W,H)*0.55:2,
+    speed,
+    maxR:Math.hypot(W,H)*0.58,
+    hue:Math.random()<0.15?Math.random()*60+180:220+Math.random()*40,
+    size:Math.random()*1.4+0.3,
+    trail:random_z?[]:[]
+  };
+}
+
+/* origine si sposta lentamente verso mouse */
+let ox=null,oy=null;
+
+function drawHyper(){
+  tick++;
+
+  /* inizializza origine al centro se non ancora definita */
+  if(ox===null){ox=W/2;oy=H/2;}
+
+  /* lerp origine verso mouse */
+  const tx=mouse_real.x>0?mouse_real.x:W/2;
+  const ty=mouse_real.y>0?mouse_real.y:H/2;
+  ox+=(tx-ox)*0.025; oy+=(ty-oy)*0.025;
+  /* guard: evita NaN/Infinity */
+  if(!isFinite(ox))ox=W/2;
+  if(!isFinite(oy))oy=H/2;
+
+  ctx.fillStyle='rgba(4,4,10,0.22)';
+  ctx.fillRect(0,0,W,H);
+
+  stars.forEach(s=>{
+    s.r+=s.speed*(1+s.r/s.maxR*1.8);
+    const x=ox+Math.cos(s.angle)*s.r;
+    const y=oy+Math.sin(s.angle)*s.r;
+    const prevR=Math.max(0,s.r-s.speed*4);
+    const px=ox+Math.cos(s.angle)*prevR;
+    const py=oy+Math.sin(s.angle)*prevR;
+
+    const alpha=Math.min(1,(s.r/s.maxR)*1.6)*0.85;
+    const width=s.size*(0.5+s.r/s.maxR*2.5);
+
+    ctx.beginPath();
+    ctx.moveTo(px,py);ctx.lineTo(x,y);
+    ctx.strokeStyle=`hsla(${s.hue},80%,75%,${alpha})`;
+    ctx.lineWidth=width;ctx.lineCap='round';ctx.stroke();
+
+    /* azzera se fuori schermo */
+    if(x<-20||x>W+20||y<-20||y>H+20||s.r>s.maxR){
+      Object.assign(s,newStar());
+    }
+  });
+
+  /* alone sull'origine */
+  const glow=ctx.createRadialGradient(ox,oy,0,ox,oy,120);
+  glow.addColorStop(0,'rgba(100,140,255,0.12)');
+  glow.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+
+  /* vignette */
+  const vig=ctx.createRadialGradient(W/2,H/2,H*0.25,W/2,H/2,H*0.9);
+  vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(1,'rgba(0,0,6,0.7)');
+  ctx.fillStyle=vig;ctx.fillRect(0,0,W,H);
+
+  requestAnimationFrame(drawHyper);
+}
 resize();
 window.addEventListener('resize',resize);
-window.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;});
+drawHyper();
+/* ── FINE IPERSPAZIO ─────────────────────────────────────────────────────── */
 
-function rand(a,b){return a+Math.random()*(b-a)}
-class Particle{
-  constructor(){
-    this.x=rand(0,W);this.y=rand(0,H);
-    this.vx=rand(-0.3,0.3);this.vy=rand(-0.3,0.3);
-    this.r=rand(0.8,2.5);this.hue=rand(200,280);
-    this.trail=[];this.phase=rand(0,Math.PI*2);
-  }
-}
-for(let i=0;i<140;i++) particles.push(new Particle());
-
-function draw(){
-  tick++;
-  ctx.fillStyle='rgba(8,8,16,0.14)';ctx.fillRect(0,0,W,H);
-  particles.forEach(p=>{
-    const dx=mouse.x-p.x,dy=mouse.y-p.y,dist=Math.sqrt(dx*dx+dy*dy)+1;
-    p.vx+=Math.sin(p.y*0.018+tick*0.01+p.phase)*0.04;
-    p.vy+=Math.cos(p.x*0.016+tick*0.012+p.phase)*0.04;
-    if(dist<250){p.vx+=dx/dist*0.025;p.vy+=dy/dist*0.025;}
-    p.vx*=0.988;p.vy*=0.988;
-    const spd=Math.sqrt(p.vx*p.vx+p.vy*p.vy);
-    if(spd>1.8){const s=1.8/spd;p.vx*=s;p.vy*=s;}
-    p.x+=p.vx;p.y+=p.vy;
-    if(p.x<-10)p.x=W+10;if(p.x>W+10)p.x=-10;
-    if(p.y<-10)p.y=H+10;if(p.y>H+10)p.y=-10;
-    p.trail.push({x:p.x,y:p.y});if(p.trail.length>16)p.trail.shift();
-    if(p.trail.length>2){
-      ctx.beginPath();ctx.moveTo(p.trail[0].x,p.trail[0].y);
-      for(let i=1;i<p.trail.length;i++) ctx.lineTo(p.trail[i].x,p.trail[i].y);
-      ctx.strokeStyle=`hsla(${p.hue},65%,60%,0.13)`;
-      ctx.lineWidth=p.r*0.5;ctx.lineCap='round';ctx.stroke();
-    }
-    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    ctx.fillStyle=`hsla(${p.hue},70%,68%,0.45)`;ctx.fill();
-  });
-  requestAnimationFrame(draw);
-}
-draw();
 
 // Entrata a cascata
 const els=[
@@ -380,8 +556,10 @@ const els=[
   {el:document.getElementById('d4'),delay:1850},
   {el:document.getElementById('b4new'),delay:1950},
   {el:document.getElementById('d5'),delay:2150},
-  {el:document.getElementById('b4'),delay:2250},
-  {el:document.getElementById('cta-row'),delay:2500},
+  {el:document.getElementById('b5sound'),delay:2250},
+  {el:document.getElementById('d6'),delay:2500},
+  {el:document.getElementById('b4'),delay:2600},
+  {el:document.getElementById('cta-row'),delay:2800},
 ];
 els.forEach(({el,delay})=>{
   setTimeout(()=>{
