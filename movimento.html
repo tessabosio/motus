@@ -8,20 +8,37 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:#080810}
 canvas{display:block;width:100%;height:100%;cursor:none}
-#ui{position:fixed;top:16px;left:16px;display:flex;flex-direction:column;gap:8px;z-index:10}
+#ui{position:fixed;top:16px;left:16px;display:flex;flex-direction:column;gap:10px;z-index:10}
 .pill{
-  background:rgba(0,0,0,0.6);
-  color:#fff;
-  font:13px/1 system-ui,sans-serif;
-  padding:7px 14px;
-  border-radius:20px;
+  width:38px;height:38px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.07);
+  border:1px solid rgba(255,255,255,0.15);
   cursor:pointer;
-  border:1px solid rgba(255,255,255,0.18);
-  transition:background .2s;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;
+  transition:background .2s, border-color .2s, transform .15s;
   user-select:none;
+  position:relative;
 }
-.pill:hover{background:rgba(80,80,200,0.7)}
-.pill.active{background:rgba(80,80,200,0.9);border-color:rgba(120,120,255,0.4)}
+.pill:hover{background:rgba(80,80,200,0.5);border-color:rgba(120,120,255,0.5);transform:scale(1.1)}
+.pill:hover .pill-tooltip{opacity:1;transform:translateX(0);pointer-events:none}
+.pill.active{background:rgba(80,80,200,0.9);border-color:rgba(120,120,255,0.6)}
+.pill-tooltip{
+  position:absolute;
+  left:48px;top:50%;transform:translateY(-50%) translateX(-6px);
+  background:rgba(80,80,200,0.85);
+  color:#fff;
+  font:11px/1 system-ui,sans-serif;
+  padding:4px 10px;
+  border-radius:6px;
+  white-space:nowrap;
+  opacity:0;
+  transition:opacity .18s, transform .18s;
+  letter-spacing:0.04em;
+  pointer-events:none;
+}
+.pill.active .pill-tooltip{opacity:1;transform:translateY(-50%) translateX(0);background:rgba(80,80,200,0.95)}
 #home-btn{
   position:fixed;
   top:16px;right:16px;
@@ -71,14 +88,15 @@ canvas{display:block;width:100%;height:100%;cursor:none}
     padding:0 12px 4px;
     gap:8px;
     scrollbar-width:none;
+    align-items:center;
   }
   #ui::-webkit-scrollbar{display:none}
   .pill{
-    white-space:nowrap;
+    width:36px;height:36px;
+    font-size:15px;
     flex-shrink:0;
-    font-size:12px;
-    padding:6px 12px;
   }
+  .pill-tooltip{display:none}
   #home-btn{font-size:12px;padding:6px 11px}
   #about-btn{font-size:12px;padding:6px 11px;top:52px}
   #info{bottom:auto;top:8px;left:50%;transform:translateX(-50%);font-size:11px;display:none}
@@ -88,11 +106,11 @@ canvas{display:block;width:100%;height:100%;cursor:none}
 <body>
 <canvas id="cv"></canvas>
 <div id="ui">
-  <div class="pill active" data-mode="gravity">🌍 Destino → Gravità</div>
-  <div class="pill" data-mode="orbit">🪐 Ritorno → Orbite </div>
-  <div class="pill" data-mode="wave">〰️ Risonanza → Onde</div>
-  <div class="pill" data-mode="magnet">🧲 Attrazione → Magnetismo </div>
-  <div class="pill" data-mode="chaos">🌀 Origine → Caos</div>
+  <div class="pill active" data-mode="gravity">🌍<span class="pill-tooltip">Destino → Gravità</span></div>
+  <div class="pill" data-mode="orbit">🪐<span class="pill-tooltip">Ritorno → Orbite</span></div>
+  <div class="pill" data-mode="wave">〰️<span class="pill-tooltip">Risonanza → Onde</span></div>
+  <div class="pill" data-mode="magnet">🧲<span class="pill-tooltip">Attrazione → Magnetismo</span></div>
+  <div class="pill" data-mode="chaos">🌀<span class="pill-tooltip">Origine → Caos</span></div>
 </div>
 <button id="home-btn">← Home</button>
 <button id="about-btn">← About</button>
@@ -167,7 +185,8 @@ cv.addEventListener('click',e=>{
     p.vx+=Math.cos(a)*s;p.vy+=Math.sin(a)*s;
     p.x=mouse.x+rand(-20,20);p.y=mouse.y+rand(-20,20);
   }
-  spawnClickWord(e.clientX,e.clientY);
+  const word=spawnClickWord(e.clientX,e.clientY);
+  playWordSound(mode,word);
 });
 
 document.querySelectorAll('.pill').forEach(el=>{
@@ -200,6 +219,7 @@ function spawnClickWord(mx,my){
     alpha:0,life:0,maxLife:90,
     size:15,type:'click',vy:-0.6
   });
+  return text;
 }
 
 function drawFloatingTexts(){
@@ -230,6 +250,311 @@ function drawFloatingTexts(){
     ctx.restore();
   });
   floatingTexts=floatingTexts.filter(t=>t.life<t.maxLife);
+}
+
+/* ── AUDIO ENGINE ── */
+let audioCtx=null;
+function getAudio(){
+  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+/* helpers */
+function osc(ac,type,freq,t){const o=ac.createOscillator();o.type=type;o.frequency.setValueAtTime(freq,t);return o;}
+function env(ac,v0,v1,dur,t){const g=ac.createGain();g.gain.setValueAtTime(v0,t);g.gain.exponentialRampToValueAtTime(v1,t+dur);return g;}
+function filt(ac,type,freq,Q){const f=ac.createBiquadFilter();f.type=type;f.frequency.value=freq;if(Q)f.Q.value=Q;return f;}
+function noise(ac,dur,decay){
+  const buf=ac.createBuffer(1,Math.floor(ac.sampleRate*dur),ac.sampleRate);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(ac.sampleRate*decay));
+  const s=ac.createBufferSource();s.buffer=buf;return s;
+}
+function chain(nodes,dest){for(let i=0;i<nodes.length-1;i++)nodes[i].connect(nodes[i+1]);nodes[nodes.length-1].connect(dest);}
+function play(nodes,dest,t,dur){chain(nodes,dest);const src=nodes[0];src.start(t);src.stop&&src.stop(t+dur);}
+
+/* 35 word-specific sounds */
+const WORD_SOUNDS={
+
+  /* ── GRAVITY: tutti gravi, sinusoidali, caduta verso il basso ── */
+  destino(ac,t){
+    // Tono profondo che scende lentamente — ineluttabile
+    const o=osc(ac,'sine',160,t),g=env(ac,0.5,0.001,1.1,t),f=filt(ac,'lowpass',350);
+    o.frequency.exponentialRampToValueAtTime(40,t+1.1);
+    chain([o,f,g],ac.destination);o.start(t);o.stop(t+1.1);
+  },
+  caduta(ac,t){
+    // Fischio acuto che precipita + colpo finale
+    const o=osc(ac,'sine',600,t),g=env(ac,0.4,0.001,0.6,t);
+    o.frequency.exponentialRampToValueAtTime(55,t+0.55);
+    chain([o,g],ac.destination);o.start(t);o.stop(t+0.6);
+    const n=noise(ac,0.1,0.03),gn=env(ac,0.7,0.001,0.1,t+0.55),fn=filt(ac,'lowpass',250);
+    chain([n,fn,gn],ac.destination);n.start(t+0.55);
+  },
+  gravità(ac,t){
+    // Due sinusoidi gravi convergenti — peso doppio
+    const o1=osc(ac,'sine',130,t),o2=osc(ac,'sine',195,t);
+    const g=env(ac,0.28,0.001,0.9,t),f=filt(ac,'lowpass',400);
+    o1.frequency.exponentialRampToValueAtTime(65,t+0.9);
+    o2.frequency.exponentialRampToValueAtTime(65,t+0.9);
+    [o1,o2].forEach(o=>{o.connect(f);});f.connect(g);g.connect(ac.destination);
+    o1.start(t);o2.start(t);o1.stop(t+0.9);o2.stop(t+0.9);
+  },
+  attrazione(ac,t){
+    // Tono che si avvicina (cresce poi cade) — pulled in
+    const o=osc(ac,'sine',90,t),g=env(ac,0.01,0.001,0.8,t),f=filt(ac,'lowpass',500);
+    o.frequency.linearRampToValueAtTime(200,t+0.3);
+    o.frequency.exponentialRampToValueAtTime(55,t+0.8);
+    g.gain.setValueAtTime(0.01,t);g.gain.linearRampToValueAtTime(0.5,t+0.3);
+    g.gain.exponentialRampToValueAtTime(0.001,t+0.8);
+    chain([o,f,g],ac.destination);o.start(t);o.stop(t+0.8);
+  },
+  peso(ac,t){
+    // Colpo sordo puro, decay lento — gravità statica
+    const n=noise(ac,0.08,0.025),gn=env(ac,0.8,0.001,0.08,t),fn=filt(ac,'lowpass',180);
+    chain([n,fn,gn],ac.destination);n.start(t);
+    const o=osc(ac,'sine',70,t),g=env(ac,0.4,0.001,0.7,t);
+    o.frequency.exponentialRampToValueAtTime(38,t+0.7);
+    chain([o,g],ac.destination);o.start(t);o.stop(t+0.7);
+  },
+  centro(ac,t){
+    // Tono stabile basso che pulsa — punto fisso
+    const o=osc(ac,'sine',110,t),g=ac.createGain();
+    g.gain.setValueAtTime(0,t);
+    for(let i=0;i<4;i++){g.gain.linearRampToValueAtTime(0.4,t+i*0.18+0.05);g.gain.linearRampToValueAtTime(0.05,t+i*0.18+0.16);}
+    g.gain.exponentialRampToValueAtTime(0.001,t+0.9);
+    chain([o,g],ac.destination);o.start(t);o.stop(t+0.9);
+  },
+  inevitabile(ac,t){
+    // Tre toni gravi in sequenza discendente — conto alla rovescia
+    [160,110,65].forEach((f,i)=>{
+      const o=osc(ac,'sine',f,t+i*0.22),g=env(ac,0.38,0.001,0.28,t+i*0.22);
+      chain([o,g],ac.destination);o.start(t+i*0.22);o.stop(t+i*0.22+0.3);
+    });
+  },
+
+  /* ── ORBIT: circolari, arpeggiate, tornano sempre al punto di partenza ── */
+  ritorno(ac,t){
+    // Arco: sale e torna alla nota base
+    [220,330,440,330,220].forEach((f,i)=>{
+      const o=osc(ac,'sine',f,t+i*0.1),g=env(ac,0.18,0.001,0.18,t+i*0.1);
+      chain([o,g],ac.destination);o.start(t+i*0.1);o.stop(t+i*0.1+0.2);
+    });
+  },
+  ciclo(ac,t){
+    // Loop di 4 note che gira su sé stesso
+    [261,329,392,329].forEach((f,i)=>{
+      const o=osc(ac,'sine',f,t+i*0.12),g=env(ac,0.2,0.001,0.16,t+i*0.12);
+      chain([o,g],ac.destination);o.start(t+i*0.12);o.stop(t+i*0.12+0.18);
+    });
+    // Ripete
+    [261,329,392,329].forEach((f,i)=>{
+      const o=osc(ac,'sine',f,t+0.5+i*0.12),g=env(ac,0.1,0.001,0.16,t+0.5+i*0.12);
+      chain([o,g],ac.destination);o.start(t+0.5+i*0.12);o.stop(t+0.5+i*0.12+0.18);
+    });
+  },
+  orbita(ac,t){
+    // Nota con vibrato circolare (FM lento) — rotazione continua
+    const car=osc(ac,'sine',330,t),mod=osc(ac,'sine',3,t);
+    const mg=ac.createGain(),mast=env(ac,0.35,0.001,1.0,t);
+    mg.gain.value=15;
+    mod.connect(mg);mg.connect(car.frequency);
+    chain([car,mast],ac.destination);car.start(t);mod.start(t);car.stop(t+1.0);mod.stop(t+1.0);
+  },
+  eterno(ac,t){
+    // Lunga sinusoide con fade-in e fade out simmetrico — senza inizio né fine
+    const o=osc(ac,'sine',220,t),g=ac.createGain();
+    g.gain.setValueAtTime(0.001,t);g.gain.linearRampToValueAtTime(0.35,t+0.5);
+    g.gain.linearRampToValueAtTime(0.35,t+0.8);g.gain.exponentialRampToValueAtTime(0.001,t+1.3);
+    chain([o,g],ac.destination);o.start(t);o.stop(t+1.3);
+  },
+  rotazione(ac,t){
+    // 6 note che girano come lancette
+    [261,294,330,349,330,294].forEach((f,i)=>{
+      const o=osc(ac,'triangle',f,t+i*0.1),g=env(ac,0.15,0.001,0.14,t+i*0.1);
+      chain([o,g],ac.destination);o.start(t+i*0.1);o.stop(t+i*0.1+0.16);
+    });
+  },
+  giro(ac,t){
+    // Portamento continuo che fa un cerchio di frequenza
+    const o=osc(ac,'sine',220,t),g=env(ac,0.3,0.001,0.9,t);
+    o.frequency.linearRampToValueAtTime(440,t+0.3);
+    o.frequency.linearRampToValueAtTime(220,t+0.6);
+    o.frequency.linearRampToValueAtTime(330,t+0.9);
+    chain([o,g],ac.destination);o.start(t);o.stop(t+0.9);
+  },
+  cerchio(ac,t){
+    // Trillo circolare tra due note vicine
+    const o=osc(ac,'sine',330,t),g=env(ac,0.28,0.001,0.7,t);
+    for(let i=0;i<7;i++) o.frequency.setValueAtTime(i%2===0?330:370,t+i*0.1);
+    chain([o,g],ac.destination);o.start(t);o.stop(t+0.75);
+  },
+
+  /* ── WAVE: modulazione AM/FM, echi, risonanza ── */
+  risonanza(ac,t){
+    // Due frequenze quasi-identiche che creano battimento
+    const o1=osc(ac,'sine',440,t),o2=osc(ac,'sine',443,t);
+    const g=env(ac,0.22,0.001,1.5,t);
+    o1.connect(g);o2.connect(g);g.connect(ac.destination);
+    o1.start(t);o2.start(t);o1.stop(t+1.5);o2.stop(t+1.5);
+  },
+  eco(ac,t){
+    // Suono + 3 echi che si affievoliscono
+    [0,0.22,0.44,0.66].forEach((d,i)=>{
+      const o=osc(ac,'sine',440,t+d),g=env(ac,0.3/(i+1),0.001,0.25,t+d);
+      chain([o,g],ac.destination);o.start(t+d);o.stop(t+d+0.28);
+    });
+  },
+  vibrazione(ac,t){
+    // FM ad alta frequenza — tremore
+    const car=osc(ac,'sine',380,t),mod=osc(ac,'sine',28,t);
+    const mg=ac.createGain(),mast=env(ac,0.38,0.001,0.8,t);
+    mg.gain.value=60;
+    mod.connect(mg);mg.connect(car.frequency);
+    chain([car,mast],ac.destination);car.start(t);mod.start(t);car.stop(t+0.8);mod.stop(t+0.8);
+  },
+  onda(ac,t){
+    // Sweep sinusoidale lento — una sola onda
+    const o=osc(ac,'sine',200,t),g=env(ac,0.001,0.001,1.0,t);
+    o.frequency.linearRampToValueAtTime(500,t+0.5);
+    o.frequency.linearRampToValueAtTime(200,t+1.0);
+    g.gain.setValueAtTime(0.001,t);g.gain.linearRampToValueAtTime(0.4,t+0.25);
+    g.gain.linearRampToValueAtTime(0.4,t+0.75);g.gain.exponentialRampToValueAtTime(0.001,t+1.0);
+    chain([o,g],ac.destination);o.start(t);o.stop(t+1.0);
+  },
+  sintonia(ac,t){
+    // Due voci che si sincronizzano (partono distanti, arrivano allo stesso tono)
+    const o1=osc(ac,'sine',400,t),o2=osc(ac,'sine',480,t);
+    const g=env(ac,0.22,0.001,1.0,t);
+    o1.frequency.linearRampToValueAtTime(440,t+0.6);
+    o2.frequency.linearRampToValueAtTime(440,t+0.6);
+    o1.connect(g);o2.connect(g);g.connect(ac.destination);
+    o1.start(t);o2.start(t);o1.stop(t+1.0);o2.stop(t+1.0);
+  },
+  frequenza(ac,t){
+    // Tono puro pulito con attack e decay precisi — la frequenza stessa
+    const o=osc(ac,'sine',528,t),g=ac.createGain();
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.4,t+0.02);
+    g.gain.setValueAtTime(0.4,t+0.5);g.gain.exponentialRampToValueAtTime(0.001,t+0.9);
+    chain([o,g],ac.destination);o.start(t);o.stop(t+0.9);
+  },
+  impulso(ac,t){
+    // Click + risonanza — un impulso che eccita una stanza
+    const n=noise(ac,0.01,0.005),gn=env(ac,1.0,0.001,0.01,t),fn=filt(ac,'bandpass',800,8);
+    chain([n,fn,gn],ac.destination);n.start(t);
+    const o=osc(ac,'sine',440,t),g=env(ac,0.35,0.001,0.7,t),f=filt(ac,'bandpass',440,5);
+    chain([o,f,g],ac.destination);o.start(t);o.stop(t+0.7);
+  },
+
+  /* ── MAGNET: triangoli, due voci, attrazione/repulsione ── */
+  polo(ac,t){
+    // Nota singola triangolare stabile — un polo definito
+    const o=osc(ac,'triangle',220,t),g=env(ac,0.35,0.001,0.8,t);
+    chain([o,g],ac.destination);o.start(t);o.stop(t+0.8);
+  },
+  campo(ac,t){
+    // Hum largo: tono base + armoniche — campo diffuso
+    [110,220,330].forEach((f,i)=>{
+      const o=osc(ac,'triangle',f,t),g=env(ac,0.2/(i+1),0.001,1.0,t);
+      chain([o,g],ac.destination);o.start(t);o.stop(t+1.0);
+    });
+  },
+  forza(ac,t){
+    // Attacco forte e breve — impulso di forza
+    const o=osc(ac,'triangle',280,t),g=env(ac,0.6,0.001,0.25,t);
+    o.frequency.exponentialRampToValueAtTime(140,t+0.25);
+    chain([o,g],ac.destination);o.start(t);o.stop(t+0.25);
+  },
+  opposti(ac,t){
+    // Due toni divergenti: uno sale, l'altro scende
+    const o1=osc(ac,'triangle',220,t),o2=osc(ac,'triangle',440,t);
+    const g=env(ac,0.22,0.001,0.8,t);
+    o1.frequency.exponentialRampToValueAtTime(440,t+0.8);
+    o2.frequency.exponentialRampToValueAtTime(220,t+0.8);
+    o1.connect(g);o2.connect(g);g.connect(ac.destination);
+    o1.start(t);o2.start(t);o1.stop(t+0.8);o2.stop(t+0.8);
+  },
+  legame(ac,t){
+    // Due toni che si avvicinano e rimangono insieme
+    const o1=osc(ac,'triangle',300,t),o2=osc(ac,'triangle',400,t);
+    const g=env(ac,0.22,0.001,0.9,t);
+    o1.frequency.exponentialRampToValueAtTime(350,t+0.4);
+    o2.frequency.exponentialRampToValueAtTime(350,t+0.4);
+    o1.connect(g);o2.connect(g);g.connect(ac.destination);
+    o1.start(t);o2.start(t);o1.stop(t+0.9);o2.stop(t+0.9);
+  },
+  tensione(ac,t){
+    // Intervallo dissonante (tritono) che non si risolve
+    const o1=osc(ac,'triangle',220,t),o2=osc(ac,'triangle',311,t);
+    const g=env(ac,0.2,0.001,1.1,t);
+    o1.connect(g);o2.connect(g);g.connect(ac.destination);
+    o1.start(t);o2.start(t);o1.stop(t+1.1);o2.stop(t+1.1);
+  },
+
+  /* ── CHAOS: rumore, sawtooth, irregolare, esplosivo ── */
+  origine(ac,t){
+    // Big bang: esplosione di rumore che si filtra verso il tono
+    const n=noise(ac,0.5,0.4),gn=env(ac,0.8,0.001,0.5,t),fn=filt(ac,'lowpass',300);
+    fn.frequency.setValueAtTime(80,t);fn.frequency.exponentialRampToValueAtTime(1200,t+0.4);
+    chain([n,fn,gn],ac.destination);n.start(t);
+    const o=osc(ac,'sawtooth',60,t),g=env(ac,0.3,0.001,0.6,t);
+    o.frequency.exponentialRampToValueAtTime(120,t+0.6);
+    chain([o,g],ac.destination);o.start(t);o.stop(t+0.6);
+  },
+  caos(ac,t){
+    // Molti oscillatori random simultanei — disordine puro
+    for(let i=0;i<6;i++){
+      const f=Math.pow(2,Math.random()*4)*55;
+      const o=osc(ac,'sawtooth',f,t),g=env(ac,0.12,0.001,rand(0.1,0.5),t+rand(0,0.12));
+      o.frequency.exponentialRampToValueAtTime(f*rand(0.5,2),t+rand(0.2,0.6));
+      chain([o,g],ac.destination);o.start(t+rand(0,0.08));o.stop(t+0.7);
+    }
+  },
+  inizio(ac,t){
+    // Silenzio poi un suono chiaro — il primo momento
+    const o=osc(ac,'sine',440,t+0.3),g=ac.createGain();
+    g.gain.setValueAtTime(0,t+0.3);g.gain.linearRampToValueAtTime(0.5,t+0.45);
+    g.gain.exponentialRampToValueAtTime(0.001,t+0.9);
+    chain([o,g],ac.destination);o.start(t+0.3);o.stop(t+0.9);
+  },
+  vuoto(ac,t){
+    // Quasi silenzio: rumore bianco tenuissimo + sub freq
+    const n=noise(ac,1.5,1.4),gn=env(ac,0.06,0.001,1.5,t),fn=filt(ac,'lowpass',120);
+    chain([n,fn,gn],ac.destination);n.start(t);
+    const o=osc(ac,'sine',30,t),g=env(ac,0.15,0.001,1.5,t);
+    chain([o,g],ac.destination);o.start(t);o.stop(t+1.5);
+  },
+  nascita(ac,t){
+    // Sweep ascendente dal basso verso l'alto — emergere
+    const o=osc(ac,'sawtooth',40,t),g=env(ac,0.001,0.001,0.9,t),f=filt(ac,'lowpass',200);
+    o.frequency.exponentialRampToValueAtTime(880,t+0.9);
+    f.frequency.setValueAtTime(100,t);f.frequency.exponentialRampToValueAtTime(3000,t+0.9);
+    g.gain.setValueAtTime(0.001,t);g.gain.linearRampToValueAtTime(0.5,t+0.45);
+    g.gain.exponentialRampToValueAtTime(0.001,t+0.9);
+    chain([o,f,g],ac.destination);o.start(t);o.stop(t+0.9);
+  },
+  abisso(ac,t){
+    // Sub grave + rumore scuro — profondità senza fondo
+    const o=osc(ac,'sine',28,t),g=env(ac,0.6,0.001,1.4,t);
+    chain([o,g],ac.destination);o.start(t);o.stop(t+1.4);
+    const n=noise(ac,1.0,0.9),gn=env(ac,0.25,0.001,1.0,t),fn=filt(ac,'lowpass',150);
+    chain([n,fn,gn],ac.destination);n.start(t);
+  },
+  prima(ac,t){
+    // Tono discendente verso il silenzio — prima di tutto
+    const o=osc(ac,'sine',220,t),g=env(ac,0.4,0.001,1.0,t);
+    o.frequency.exponentialRampToValueAtTime(55,t+1.0);
+    chain([o,g],ac.destination);o.start(t);o.stop(t+1.0);
+    const n=noise(ac,0.3,0.3),gn=env(ac,0.1,0.001,0.3,t),fn=filt(ac,'highpass',2000);
+    chain([n,fn,gn],ac.destination);n.start(t);
+  }
+};
+
+function playWordSound(m,word){
+  const ac=getAudio();
+  const t=ac.currentTime;
+  const fn=WORD_SOUNDS[word];
+  if(fn) fn(ac,t);
 }
 
 function applyPhysics(p){
